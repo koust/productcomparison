@@ -5,8 +5,8 @@ Software for grouping and comparing products. I made with [ZN Framework](https:/
 
 # Screenshot from project
 
-![](https://i.hizliresim.com/bBO7GZ.jpg)
-![](https://i.hizliresim.com/D7Lgyo.jpg)
+![image1](https://i.hizliresim.com/bBO7GZ.jpg)
+![image2](https://i.hizliresim.com/D7Lgyo.jpg)
 
 # Requirements
 
