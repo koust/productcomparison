@@ -11,7 +11,7 @@ Software for grouping and comparing products. I made with [ZN Framework](https:/
 
 # Requirements
 
-- PHP should beat leastversion 7.0.0 .
+- PHP should be at least version 7.0.0 .
 - Apache AllowOverride value None instead of Allow  must be set and mod_rewrite feature must be turned on.
 - MB String plugin must be installed.
 
