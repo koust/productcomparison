@@ -1,0 +1,119 @@
+<?php namespace Project\Controllers;
+
+use DB,Import;
+
+class Getproduct extends Controller
+{
+    /**
+     * Home::main
+     * 
+     * Loads opening page.
+     * Location: Views/Home/main.wizard.php
+     */
+    public function main(String $params = NULL)
+    {  
+
+    } 
+
+
+    public static function getProductListWGroup($groupId)
+    {
+
+        $productList = DB::where('product.groupId',$groupId)->get('product');
+
+        return $productList->resultArray();
+    }
+
+    public static function getProductList(){
+
+         $productList = DB::get('product');
+
+        return $productList->resultArray();
+    }
+
+
+    public static function getBrand($brandid){
+        $brand = DB::where('brandid',$brandid)->get('brand');
+        foreach( $brand->resultArray() as $result )
+        {
+            return $result['brandname'];
+        }
+    }
+
+    public static function getGroup($gropid){
+        $group = DB::where('groupid',$gropid)->get('groupname');
+        foreach( $group->resultArray() as $result )
+        {
+            return $result['groupName'];
+        }
+    }
+
+    public static function getProductSection($productid){
+         $productList = DB::where('product.productid',$productid)->get('product');
+
+        return $productList->row();
+    }
+
+    public static function getNameFeatures($productid,$productfeaturesid){
+        $features = DB::where('productid',$productid,'and')->where('productfeaturesid',$productfeaturesid)->get('isproductfeatures');
+    
+        return $features->row();
+    }
+
+    public static function getBrandList(){
+
+
+        $brandList = DB::get('brand');
+
+        return $brandList->resultArray();
+    }
+
+
+    
+
+
+    public static function getFeaturesName()
+    {
+        $featuresName = DB::get('productfeatures');
+
+         return $featuresName->resultArray();
+    }
+
+
+    public static function getGroupList(){
+          $featuresName = DB::get('groupname');
+
+         return $featuresName->resultArray();
+    }
+
+
+   
+
+    public function addGroupName($groupName)
+    {
+
+
+        DB::insert('groupname',
+        [
+
+            'groupname' => $groupName
+        ]);
+
+        //$brand = DB::get('brand');
+
+    }
+
+    public function addBrandName($brandName)
+    {
+        DB::duplicateCheck()->insert('brand',
+        [
+
+            'brandname' => $brandName
+        ]);
+
+        $brand = DB::get('brand');
+
+        output($brand->result());
+
+    }
+}

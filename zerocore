@@ -1,0 +1,49 @@
+#!/usr/bin/env php
+<?php
+/*
+|--------------------------------------------------------------------------
+| Console Usage
+|--------------------------------------------------------------------------
+|
+| It keeps track of whether processes are running through the console.
+|
+*/
+
+define('CONSOLE_ENABLED', true);
+
+/*
+|--------------------------------------------------------------------------
+| Project Name
+|--------------------------------------------------------------------------
+|
+| The project to be processed is selected.
+|
+*/
+
+if( ($argv[1] ?? NULL) === 'project-name' )
+{
+    define('CONSOLE_PROJECT_NAME', $argv[2]);
+}
+
+/*
+|--------------------------------------------------------------------------
+| Require zeroneed.php
+|--------------------------------------------------------------------------
+|
+| The file containing the system and basic structures is included.
+|
+*/
+
+require_once __DIR__ . '/zeroneed.php';
+
+/*
+|--------------------------------------------------------------------------
+| Run Console
+|--------------------------------------------------------------------------
+|
+| It was created in order to use the existing frameworks of the ZN 
+| when you need to send commands to the PHP client via the console.
+|
+*/
+
+new ZN\Console\Run($argv);

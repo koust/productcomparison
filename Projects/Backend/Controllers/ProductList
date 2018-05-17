@@ -1,0 +1,227 @@
+<?php namespace Project\Controllers;
+
+use Method,Upload,DB,Validation,Redirect,Post,Converter;
+
+class ProductList extends Controller
+{
+    /**
+     * The codes to run at startup.
+     * It enters the circuit before all controllers. 
+     * You can change this setting in Config/Starting.php file.
+     */
+    public function main(String $params = NULL)
+    {
+
+        Redirect::action('dashboard');
+
+
+    }
+
+    public function addProduct(){
+
+
+        Login::checkSession();
+        Theme::active('Admin');
+        Masterpage::headPage('AdminSections/head')
+                  ->bodyPage('ProductList/Addproduct/main');
+        $groupListData = Getproduct::getGroupList();
+        $featuresListData = Getproduct::getFeaturesName();   
+        $brandListData = Getproduct::getBrandList();
+        View::groupList($groupListData);
+        View::brandList($brandListData);
+        View::featuresList($featuresListData);
+
+
+        $productname = Method::post('productname');
+        $productprice = Method::post('productprice');
+        $productgroupid = Method::post('groupid');
+        $brandid = Method::post('brandid');
+
+
+        if(!empty($productname)){
+
+
+
+        $productimage =  ProductList::imageUpload("productimage");
+
+            if(!DB::isExists('product', 'productname', $productname)){
+
+
+                $addData = DB::duplicateCheck('productname')->insert('product',
+                    [
+                        'productname'    => $productname,
+                        'productprice'    => $productprice,
+                        'groupid'    => $productgroupid,
+                        'productbrandid'    => $brandid,
+                        'productimage'    => $productimage
+                    ]
+                );
+
+                $productid = DB::insertID();
+                foreach ($featuresListData as $key ) {
+                   $addFeaturesData = DB::insert('isproductfeatures',[
+                    'productid' => $productid,
+                    'productfeaturesid' => $key['productfeaturesid'],
+                    'featuresname' => Method::post($key['productfeatures'])
+                    ]);
+                }
+
+
+                if($addData){
+                    View::success("Başarılı şekilde eklendi");
+                    //Redirect::wait(2)->action('ProductList/Addproduct');
+                }else{
+                    View::error("Ürün eklenemedi");
+                }
+
+
+            }else{
+                View::error("Bu ad ile ürün bulunmaktadır");
+            }  
+      
+        }
+     
+    }
+
+
+    public function List(){
+        Login::checkSession();
+        Theme::active('Admin');
+        Masterpage::headPage('AdminSections/head')
+                  ->bodyPage('ProductList/List/main');
+
+ 
+        View::groupList(ProductList::plistData());         
+
+    }
+
+
+    public static function plistData(){
+        $dataList = Getproduct::getProductList();
+
+        $productData = [];
+        
+        foreach ($dataList as $key) {
+           array_push($productData , array('productname' => $key['productname'],
+            'productimage' => $key['productimage'], 
+            'productprice' => Converter::money($key['productprice'] , '₺'), 
+            'brandname' => Getproduct::getBrand($key['productbrandid']), 
+            'groupname' => Getproduct::getGroup($key['groupid']),
+            'groupid' => $key['groupid'],
+            'productid' => $key['productid']
+            ));
+        }
+
+        return $productData;
+    }
+
+
+    public static function imageUpload($fileName){
+        Upload::settings
+        ([
+         'encode'     => false,
+         'prefix'     => 'ss_',
+         'extensions' => 'jpg|png|gif'
+        ])->start($fileName);
+
+        return Upload::info('encodeName');
+    }
+
+
+    public static function updateProduct($productId){
+        Login::checkSession();
+        Theme::active('Admin');
+        Masterpage::headPage('AdminSections/head')
+                  ->bodyPage('ProductList/updateProduct/main');
+        $groupListData = Getproduct::getGroupList();
+        $featuresListData = Getproduct::getFeaturesName();   
+        $brandListData = Getproduct::getBrandList();
+        View::groupList($groupListData);
+        View::brandList($brandListData);
+
+        /* Features List add Value to data*/
+
+        $feautreData = [];
+        foreach ($featuresListData as $key) {
+            array_push($feautreData , array(
+            'featuresname' => Getproduct::getNameFeatures($productId,$key['productfeaturesid'])->featuresname,
+            'productfeaturesid' => $key['productfeaturesid'], 
+            'productfeatures' =>$key['productfeatures']));
+
+        }
+
+        View::featuresList($feautreData);
+
+        $currentProductData = Getproduct::getProductSection($productId);
+        $dataParse  =
+
+        [
+            'productname' => $currentProductData->productname,
+            'productprice' => $currentProductData->productprice,
+            'groupid' =>     $currentProductData->groupid,
+            'productimage' =>     $currentProductData->productimage,
+            'productbrandid' =>     $currentProductData->productbrandid,
+            'groupname' =>    Getproduct::getGroup($currentProductData->groupid),
+            'brandname' =>    Getproduct::getBrand($currentProductData->productbrandid)
+        ];
+        View::productData($dataParse);
+
+
+        $productname = Method::post('productname');
+        $productprice = Method::post('productprice');
+        $productgroupid = Method::post('groupid');
+        $brandid = Method::post('brandid');
+        $productimage =  ProductList::imageUpload("productimage");
+        
+        if(!empty($productname)){
+
+                $updateProduct = DB::where('productid',$productId)->update('product',
+                    [
+                        'productbrandid'    => $brandid,
+                        'groupid' => $productgroupid,
+                        'productname' => $productname,
+                        'productprice' => $productprice
+                    ]
+                );
+
+               foreach ($featuresListData as $key ) {
+                    DB::where('productid',$productId,'and')->where('productfeaturesid',$key['productfeaturesid'])->update('isproductfeatures',[
+                    'featuresname' => Method::post($key['productfeatures'])
+                    ]);
+                }
+
+                if($updateProduct){
+                    if(!empty(Method::files('productimage'))){
+
+                        $updateImage = DB::where('productid',$productId)->update('product',
+                            [
+                                'productimage'    => $productimage
+                            ]
+                        );
+
+
+                        if($updateImage){
+                            View::success("Bilgiler başarılı bir şekilde güncellendi.");
+                        }
+
+
+                    }
+                }else {
+
+
+                         View::error("Teknik bir hata oluştu");
+                }
+
+
+        }
+
+    }
+
+    public static function deleteProduct($productId){
+
+        DB::where('productid', $productId)->delete('product');
+        DB::where('productid', $productId)->delete('isproductfeatures');
+
+        Redirect::refresh('productlist/list');
+    }
+}

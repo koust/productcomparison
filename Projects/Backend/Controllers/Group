@@ -1,0 +1,123 @@
+<?php namespace Project\Controllers;
+
+    use Redirect,Method,DB;
+class Group extends Controller
+{
+
+    /**
+     * The codes to run at startup.
+     * It enters the circuit before all controllers. 
+     * You can change this setting in Config/Starting.php file.
+     */
+    public function main(String $params = NULL)
+    {
+        
+    
+
+        Redirect::action('dashboard');
+
+    }
+
+
+    public function addGroup(){
+
+
+        Login::checkSession();
+        Theme::active('Admin');
+        Masterpage::headPage('AdminSections/head')
+                  ->bodyPage('Group/Addgroup/main');
+
+
+        $groupname = Method::post('groupname');
+
+        if(!empty($groupname)){
+
+            $registerGroup = DB::duplicateCheck()->insert('groupname',
+            [
+                'groupname' => $groupname
+            ]);
+
+
+            if($groupname){
+                 View::success("Başarılı şekilde eklendi");
+                    //Redirect::wait(2)->action('ProductList/Addproduct');
+                }else{
+                    View::error("Bir sorun oluştu");
+            }
+
+        }
+
+
+    }
+
+
+    public function updateGroup($groupid){
+
+        Login::checkSession();
+        Theme::active('Admin');
+        Masterpage::headPage('AdminSections/head')
+                  ->bodyPage('Group/updateGroup/main');
+
+        $groupData = Group::getGroupRow($groupid);
+        View::getGroupName($groupData->groupName);   
+
+
+        $groupname = Method::post('groupname');
+
+
+        if(!empty($groupname)){
+
+            $updateGroupData = DB::where('groupid', $groupid)->update('groupname',
+            [
+                'groupname' => $groupname
+            ]);
+
+            if($updateGroupData){
+                View::success("Başarılı şekilde güncellendi");
+                Redirect::wait(2)->action('group/list');
+                }else{
+                View::error("Bir sorun oluştu");
+            }
+        }
+
+    }
+
+
+
+    public static function deleteGroup($groupId){
+
+        DB::where('groupid', $groupId)->delete('groupname');
+
+        Redirect::refresh('group/list');
+    }
+
+
+    public function list(){
+        Login::checkSession();
+        Theme::active('Admin');
+        Masterpage::headPage('AdminSections/head')
+                  ->bodyPage('Group/List/main');
+
+        $groupListData = Group::getGroupListData();
+        View::getGroupList($groupListData);   
+    }
+
+
+
+
+    public function getGroupRow($groupid){
+
+        $getGroupRow = DB::where('groupid',$groupid)->get('groupname');
+
+        return $getGroupRow->row();
+
+    }
+
+
+    public static function getGroupListData(){
+         $groupList = DB::get('groupname');
+
+        return $groupList->resultArray();
+    }
+
+}

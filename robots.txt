@@ -1,0 +1,5 @@
+User-agent: *
+Disallow: /External/
+Disallow: /Internal/
+Disallow: /Projects/
+Disallow: /Settings/
